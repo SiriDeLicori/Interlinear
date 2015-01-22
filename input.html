@@ -1,0 +1,66 @@
+<html>
+<head> <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+<style>
+div.floater {float:left;margin-left:4px;margin-bottom:12px}
+div.leadingtext {font-size:1.2em;font-style:bold;}
+div.followingtext {font-size:1.2em;}
+div.definition {font-size:0.8em;color:#002b65}
+div.pronunciation {font-style:italic;font-size:0.8em;color:#002b65}
+p {clear:both;margin-bottom:25px}
+#RepititionSchedule {width:50%;color:#002b65}
+</style>
+<script type="text/javascript">
+	function doCheckInput() {
+		alert(1);
+		
+	} 
+	
+	function showAll(e) {
+		while (e) {
+			e.style.visibility='visible';
+			e = e.nextElementSibling;
+		}
+	}
+
+	function doGetCaretPosition (oField) {
+		// from http://flightschool.acylt.com/devnotes/caret-position-woes/
+	  // Initialize
+	  var iCaretPos = 0;
+
+	  // IE Support
+	  if (document.selection) {
+
+	    // Set focus on the element
+	    oField.focus ();
+
+	    // To get cursor position, get empty selection range
+	    var oSel = document.selection.createRange ();
+
+	    // Move selection start to 0 position
+	    oSel.moveStart ('character', -oField.value.length);
+
+	    // The caret position is selection length
+	    iCaretPos = oSel.text.length;
+	  }
+
+	  // Firefox support
+	  else if (oField.selectionStart || oField.selectionStart == '0')
+	    iCaretPos = oField.selectionStart;
+
+	  // Return results
+	  return (iCaretPos);
+}
+</script>
+</head>
+<body>
+<form name="TopForm">
+	Repitition Schedule: <input type="text" name="RepititionSchedule" id="RepititionSchedule" value="1 1 2 3 5 13 21 33 54 87"></input><br />
+	Sentence Count: <input type="text" name="SentenceCount" id="SentenceCound" value="0"></input><br />
+	Words to Repeat: <textarea name="RepeatWords" id="RepeatWords"></textarea>
+	Known Words: <textarea name="KnownWords" id="KnownWords"></textarea>
+	New Words: <textarea name="NewWords" id="NewWords"></textarea>
+
+	MainInput: <textarea name="MainInput" id="MainInput" onkeypress="doCheckInput()"></textarea>
+</form>
+</body>
+</html>
