@@ -1,66 +1,146 @@
 <html>
-<head> <meta content="text/html; charset=UTF-8" http-equiv="content-type">
-<style>
-div.floater {float:left;margin-left:4px;margin-bottom:12px}
-div.leadingtext {font-size:1.2em;font-style:bold;}
-div.followingtext {font-size:1.2em;}
-div.definition {font-size:0.8em;color:#002b65}
-div.pronunciation {font-style:italic;font-size:0.8em;color:#002b65}
-p {clear:both;margin-bottom:25px}
-#RepititionSchedule {width:50%;color:#002b65}
-</style>
-<script type="text/javascript">
-	function doCheckInput() {
-		alert(1);
-		
-	} 
-	
-	function showAll(e) {
-		while (e) {
-			e.style.visibility='visible';
-			e = e.nextElementSibling;
-		}
-	}
+	<head> <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+		<style>
+			div.floater {float:left;margin-left:4px;margin-bottom:12px}
+			div.leadingtext {font-size:1.2em;font-style:bold;}
+			div.followingtext {font-size:1.2em;}
+			div.definition {font-size:0.8em;color:#002b65}
+			div.pronunciation {font-style:italic;font-size:0.8em;color:#002b65}
+			p {clear:both;margin-bottom:25px}
+			#RepititionSchedule {width:50%;color:#002b65}
+		</style>
 
-	function doGetCaretPosition (oField) {
-		// from http://flightschool.acylt.com/devnotes/caret-position-woes/
-	  // Initialize
-	  var iCaretPos = 0;
+	</head>
+	<body>
+		<form name="TopForm">
+			Repitition Schedule: <input type="text" name="RepititionSchedule" id="RepititionSchedule" value="1 1 2 3 5 13 21 33 54 87"></input><br />
+			Sentence Count: <input type="text" name="SentenceCount" id="SentenceCound" value="0"></input><br />
+			Words to Repeat: <textarea name="RepeatWords" id="RepeatWords"></textarea>
+			Known Words: <textarea name="KnownWords" id="KnownWords"></textarea>
+			New Words: <textarea name="NewWords" id="NewWords"></textarea>
 
-	  // IE Support
-	  if (document.selection) {
+			MainInput: <textarea name="MainInput" id="MainInput"></textarea>
+		</form>
 
-	    // Set focus on the element
-	    oField.focus ();
+		<script src="static/libs/jquery/dist/jquery.js"></script>
+		<script src="static/libs/angularjs/angular.js"></script>
 
-	    // To get cursor position, get empty selection range
-	    var oSel = document.selection.createRange ();
+		<script type="text/javascript">
+			 var arrWordsToRepeat = [];
+			 var iSentences = 0;
+			 $( document ).ready(function() {
+				$('#MainInput').on('change keyup paste', function(event) {
+					if(event.which == 32 || event.which == 13 || event.which == 10 || event.which == 9 ) {
+						countWords($('#MainInput'));
+						sortWords(1,1);
+						printWords($('#RepeatWords'));
+					};
+				});
+			});
 
-	    // Move selection start to 0 position
-	    oSel.moveStart ('character', -oField.value.length);
+			function stripInput(inputValue) {
+				return (inputValue.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,"")).replace(/\s{2,}/g," ");
+			}
 
-	    // The caret position is selection length
-	    iCaretPos = oSel.text.length;
-	  }
+			function countWords(txtAreaInput) {
+				var arrInput = [];
+				var arrInput = $.trim(txtAreaInput.val()).split(' ');
+				arrWordsToRepeat = []
+				iSentences = 0;
 
-	  // Firefox support
-	  else if (oField.selectionStart || oField.selectionStart == '0')
-	    iCaretPos = oField.selectionStart;
+				$.each(arrInput, function(inputIndex, inputValue) {
+					if ($.trim(inputValue).slice(-1) == ".") {iSentences++;};
+					inputValue = stripInput(inputValue)
+					var wordIndex = -1;
+					$.each(arrWordsToRepeat, function(wordsIndex, wordsValue) {
+						if(wordsValue[0] == inputValue) {
+							wordIndex = wordsIndex;
+							return false;
+						};
+					});
+					if (wordIndex == -1) {
+						if($.trim(inputValue) != "") {arrWordsToRepeat.push([inputValue, 1]);};
+					} else {
+						arrWordsToRepeat[wordIndex][1]++;
+					};
+				});
+			};
 
-	  // Return results
-	  return (iCaretPos);
-}
-</script>
-</head>
-<body>
-<form name="TopForm">
-	Repitition Schedule: <input type="text" name="RepititionSchedule" id="RepititionSchedule" value="1 1 2 3 5 13 21 33 54 87"></input><br />
-	Sentence Count: <input type="text" name="SentenceCount" id="SentenceCound" value="0"></input><br />
-	Words to Repeat: <textarea name="RepeatWords" id="RepeatWords"></textarea>
-	Known Words: <textarea name="KnownWords" id="KnownWords"></textarea>
-	New Words: <textarea name="NewWords" id="NewWords"></textarea>
+			function printWords(txtAreaOutput) {
+				txtAreaOutput.val("");
+				$.each(arrWordsToRepeat, function(index, value) {
+					txtAreaOutput.val(txtAreaOutput.val() + value[0] + " " + value[1] + "\n");
+				});
+			};
 
-	MainInput: <textarea name="MainInput" id="MainInput" onkeypress="doCheckInput()"></textarea>
-</form>
-</body>
+			function sortWords(iSortField, bAscending) {
+				var arrCache = [];
+				var n = arrWordsToRepeat.length;
+				if (bAscending = 1) {
+					while (n > 0) {
+						var newn = 0;
+						for (var i = 1; i < n; i++) {
+							if (arrWordsToRepeat[i-1][iSortField] > arrWordsToRepeat[i][iSortField]) {
+								arrCache = arrWordsToRepeat[i-1];
+								arrWordsToRepeat[i-1] = arrWordsToRepeat[i];
+								arrWordsToRepeat[i] = arrCache;
+								newn = i;
+							};
+						};
+						n = newn;
+					};
+				};
+				if (bAscending = 0) {
+					while (n > 0) {
+						var newn = 0;
+						for (var i = 1; i < n; i++) {
+							if (arrWordsToRepeat[i-1][iSortField] < arrWordsToRepeat[i][iSortField]) {
+								arrCache = arrWordsToRepeat[i-1];
+								arrWordsToRepeat[i-1] = arrWordsToRepeat[i];
+								arrWordsToRepeat[i] = arrCache;
+								newn = i;
+							};
+						};
+						n = newn;
+					};
+				};
+			};
+			
+			function showAll(e) {
+				while (e) {
+					e.style.visibility='visible';
+					e = e.nextElementSibling;
+				}
+			};
+
+			function doGetCaretPosition (oField) {
+				// from http://flightschool.acylt.com/devnotes/caret-position-woes/
+			  	// Initialize
+			  var iCaretPos = 0;
+
+			  // IE Support
+			  if (document.selection) {
+
+			    // Set focus on the element
+			    oField.focus ();
+
+			    // To get cursor position, get empty selection range
+			    var oSel = document.selection.createRange ();
+
+			    // Move selection start to 0 position
+			    oSel.moveStart ('character', -oField.value.length);
+
+			    // The caret position is selection length
+			    iCaretPos = oSel.text.length;
+			  }
+
+			  // Firefox support
+			  else if (oField.selectionStart || oField.selectionStart == '0')
+			    iCaretPos = oField.selectionStart;
+
+			  // Return results
+			  return (iCaretPos);
+			}
+		</script>
+	</body>
 </html>
